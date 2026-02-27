@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Jdu DDT!</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --overlay: rgba(0,0,0,0.45);
+      --primary: #ff3b30;
+      --text: #ffffff;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: "Inter", sans-serif;
+    }
+
+    html, body {
+      height: 100%;
+    }
+
+    body {
+      background: url("bg_ddt.webp") center/cover no-repeat;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      color: var(--text);
+      position: relative;
+    }
+
+    body::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: var(--overlay);
+      z-index: 0;
+    }
+
+    .container {
+      position: relative;
+      z-index: 1;
+      padding: 2rem;
+      max-width: 90vw;
+    }
+
+    h1 {
+      font-size: clamp(2.5rem, 6vw, 4rem);
+      font-weight: 800;
+      margin-bottom: 0.5rem;
+    }
+
+    .date {
+      font-size: clamp(1.1rem, 3vw, 1.5rem);
+      margin-bottom: 1.5rem;
+      opacity: 0.9;
+    }
+
+    .countdown {
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      margin-bottom: 2rem;
+      flex-wrap: wrap;
+    }
+
+    .time-box {
+      min-width: 70px;
+    }
+
+    .time-number {
+      font-size: clamp(1.8rem, 4vw, 2.5rem);
+      font-weight: 700;
+    }
+
+    .time-label {
+      font-size: 0.8rem;
+      opacity: 0.8;
+    }
+
+    .cta-button {
+      display: inline-block;
+      padding: 0.9rem 2.2rem;
+      font-size: 1rem;
+      font-weight: 600;
+      color: white;
+      background: var(--primary);
+      border-radius: 999px;
+      text-decoration: none;
+      transition: 0.25s ease;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.25);
+    }
+
+    .cta-button:hover {
+      transform: translateY(-2px) scale(1.03);
+      box-shadow: 0 14px 35px rgba(0,0,0,0.35);
+    }
+
+    .cta-button:active {
+      transform: scale(0.97);
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <h1>Jdu DDT!</h1>
+    <div class="date">22. 8. 2026</div>
+
+    <div class="countdown" id="countdown">
+      <div class="time-box">
+        <div class="time-number" id="days">--</div>
+        <div class="time-label">dní</div>
+      </div>
+      <div class="time-box">
+        <div class="time-number" id="hours">--</div>
+        <div class="time-label">hodin</div>
+      </div>
+      <div class="time-box">
+        <div class="time-number" id="minutes">--</div>
+        <div class="time-label">minut</div>
+      </div>
+      <div class="time-box">
+        <div class="time-number" id="seconds">--</div>
+        <div class="time-label">sekund</div>
+      </div>
+    </div>
+
+    <a class="cta-button" href="https://forms.google.com" target="_blank">
+      Přihlásit se
+    </a>
+  </div>
+
+  <script>
+    const targetDate = new Date("2026-08-22T00:00:00").getTime();
+
+    function updateCountdown() {
+      const now = new Date().getTime();
+      const diff = targetDate - now;
+
+      if (diff <= 0) {
+        document.getElementById("countdown").innerHTML = "Závod právě začal!";
+        return;
+      }
+
+      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
+      const minutes = Math.floor((diff / (1000 * 60)) % 60);
+      const seconds = Math.floor((diff / 1000) % 60);
+
+      document.getElementById("days").textContent = days;
+      document.getElementById("hours").textContent = hours;
+      document.getElementById("minutes").textContent = minutes;
+      document.getElementById("seconds").textContent = seconds;
+    }
+
+    updateCountdown();
+    setInterval(updateCountdown, 1000);
+  </script>
+</body>
+</html>

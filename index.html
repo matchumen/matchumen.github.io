@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="cs">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -7,9 +8,13 @@
 
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
 
+  <!-- Leaflet -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
   <style>
     :root {
-      --overlay: rgba(0,0,0,0.45);
+      --overlay: rgba(0, 0, 0, 0.45);
       --primary: #ff3b30;
       --text: #ffffff;
     }
@@ -21,21 +26,34 @@
       font-family: "Inter", sans-serif;
     }
 
-    html, body {
-      height: 100%;
+    html {
+      scroll-behavior: smooth;
+      scroll-snap-type: y mandatory;
     }
 
     body {
-      background: url("bg_ddt.webp") center/cover no-repeat;
+      margin: 0;
+    }
+
+    /* PAGE LAYOUT */
+
+    .page {
+      height: 100vh;
+      scroll-snap-align: start;
       display: flex;
       align-items: center;
       justify-content: center;
       text-align: center;
-      color: var(--text);
+      padding: 2rem;
       position: relative;
     }
 
-    body::before {
+    .page.hero {
+      background: url("data/bg_ddt.webp") center/cover no-repeat;
+      color: white;
+    }
+
+    .page.hero::before {
       content: "";
       position: absolute;
       inset: 0;
@@ -43,12 +61,18 @@
       z-index: 0;
     }
 
+    .page.normal {
+      background: #f5f5f7;
+      color: #111;
+    }
+
     .container {
       position: relative;
       z-index: 1;
-      padding: 2rem;
-      max-width: 90vw;
+      max-width: 900px;
     }
+
+    /* TYPOGRAPHY */
 
     h1 {
       font-size: clamp(2.5rem, 6vw, 4rem);
@@ -61,6 +85,30 @@
       margin-bottom: 1.5rem;
       opacity: 0.9;
     }
+
+    /* DISTANCES */
+
+    .distances {
+      display: flex;
+      justify-content: center;
+      gap: 1.5rem;
+      margin-bottom: 1.5rem;
+      flex-wrap: wrap;
+      font-size: 1.1rem;
+      opacity: 0.9;
+    }
+
+    .distance {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .icon {
+      font-size: 1.3rem;
+    }
+
+    /* COUNTDOWN */
 
     .countdown {
       display: flex;
@@ -84,6 +132,8 @@
       opacity: 0.8;
     }
 
+    /* BUTTON */
+
     .cta-button {
       display: inline-block;
       padding: 0.9rem 2.2rem;
@@ -94,78 +144,194 @@
       border-radius: 999px;
       text-decoration: none;
       transition: 0.25s ease;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.25);
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25);
     }
 
     .cta-button:hover {
       transform: translateY(-2px) scale(1.03);
-      box-shadow: 0 14px 35px rgba(0,0,0,0.35);
+      box-shadow: 0 14px 35px rgba(0, 0, 0, 0.35);
     }
 
     .cta-button:active {
       transform: scale(0.97);
     }
 
-    .distances {
-    display: flex;
-    justify-content: center;
-    gap: 1.5rem;
-    margin-bottom: 1.5rem;
-    flex-wrap: wrap;
-    font-size: 1.1rem;
-    opacity: 0.9;
-  }
+    /* SCROLL INDICATOR */
 
-  .distance {
-    display: flex;
-    align-items: center;
-    gap: 0.4rem;
-  }
+    .scroll-indicator {
+      position: absolute;
+      bottom: 35px;
+      left: 50%;
+      transform: translateX(-50%);
+      cursor: pointer;
+      animation: bounce 2s infinite;
+      z-index: 2;
+    }
 
-  .icon {
-    font-size: 1.3rem;
-  }
+    .scroll-indicator span {
+      font-size: 2rem;
+      opacity: 0.9;
+    }
+
+    @keyframes bounce {
+
+      0%,
+      20%,
+      50%,
+      80%,
+      100% {
+        transform: translate(-50%, 0);
+      }
+
+      40% {
+        transform: translate(-50%, 10px);
+      }
+
+      60% {
+        transform: translate(-50%, 5px);
+      }
+    }
+
+    /* MAP */
+
+    #map {
+      width: min(1000px, 90vw);
+      height: min(600px, 70vh);
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+    }
   </style>
 </head>
 
 <body>
-  <div class="container">
-    <h1>Jdu DDT!</h1>
-    <div class="date">22. 8. 2026</div>
 
-    <!-- Distances -->
-    <div class="distances">
-      <div class="distance"><span class="icon">🏊</span> 750 m</div>
-      <div class="distance"><span class="icon">🚴</span> 20 km</div>
-      <div class="distance"><span class="icon">🏃</span> 5 km</div>
+  <!-- PAGE 1 -->
+  <section class="page hero" id="page1">
+
+    <div class="container">
+
+      <h1>Jdu DDT!</h1>
+      <div class="date">22. 8. 2026</div>
+
+      <div class="distances">
+        <div class="distance"><span class="icon">🏊</span> 750 m</div>
+        <div class="distance"><span class="icon">🚴</span> 20 km</div>
+        <div class="distance"><span class="icon">🏃</span> 5 km</div>
+      </div>
+
+      <div class="countdown" id="countdown">
+        <div class="time-box">
+          <div class="time-number" id="days">--</div>
+          <div class="time-label">dní</div>
+        </div>
+
+        <div class="time-box">
+          <div class="time-number" id="hours">--</div>
+          <div class="time-label">hodin</div>
+        </div>
+
+        <div class="time-box">
+          <div class="time-number" id="minutes">--</div>
+          <div class="time-label">minut</div>
+        </div>
+
+        <div class="time-box">
+          <div class="time-number" id="seconds">--</div>
+          <div class="time-label">sekund</div>
+        </div>
+      </div>
+
+      <a class="cta-button"
+        href="https://docs.google.com/forms/d/e/1FAIpQLSfwFNNPkVbgltU-0_rUsiFfe2pnc7qIXB1Etm7bfajwMhePBw/viewform?usp=dialog"
+        target="_blank">
+        Přihlásit se
+      </a>
+
     </div>
 
-    <div class="countdown" id="countdown">
-      <div class="time-box">
-        <div class="time-number" id="days">--</div>
-        <div class="time-label">dní</div>
-      </div>
-      <div class="time-box">
-        <div class="time-number" id="hours">--</div>
-        <div class="time-label">hodin</div>
-      </div>
-      <div class="time-box">
-        <div class="time-number" id="minutes">--</div>
-        <div class="time-label">minut</div>
-      </div>
-      <div class="time-box">
-        <div class="time-number" id="seconds">--</div>
-        <div class="time-label">sekund</div>
-      </div>
+    <div class="scroll-indicator" onclick="scrollNext()">
+      <span>↓</span>
     </div>
 
-    <a class="cta-button" href="https://docs.google.com/forms/d/e/1FAIpQLSfwFNNPkVbgltU-0_rUsiFfe2pnc7qIXB1Etm7bfajwMhePBw/viewform?usp=dialog" target="_blank">
-      Přihlásit se
-    </a>
-  </div>
+  </section>
+
+  <!-- PAGE 2: MAP -->
+  <section class="page normal">
+
+    <div class="container">
+
+      <h1>Trať závodu</h1>
+
+      <div id="map"></div>
+
+    </div>
+
+  </section>
+
+  <!-- PAGE 3 -->
+  <section class="page normal">
+    <div class="container">
+      <h1>Informace</h1>
+      <div class="info-block"
+        style="text-align:left; max-width:600px; margin:2rem auto; background:rgba(255,255,255,0.07); padding:2rem; border-radius:1rem; box-shadow:0 2px 12px rgba(0,0,0,0.07); max-height:70vh; overflow-y:auto; backdrop-filter:blur(4px);">
+        <h2 style="color:var(--primary); margin-bottom:0.5em;">DDT je triatlon punkového typu</h2>
+        <p>Připrav se na <b>minimální support</b> a <b>maximální zábavu</b>.<br>
+          Čeká tě <b>750&nbsp;m plavání</b>, <b>20&nbsp;km na kole</b> a <b>5&nbsp;km běhu</b>.</p>
+
+        <h3 style="margin-top:1.5em;">Místo konání</h3>
+        <p><b>Chudíř</b></p>
+
+        <h3>Čas startu</h3>
+        <p><b>14:00</b></p>
+
+        <h3 style="margin-top:1.5em;">Plavání</h3>
+        <p>Plave se v rybníce, není tam hloubka, tak si můžeš oddychnout. Bezpečnost zajištěna ostražitým kajakářem.</p>
+
+        <h3>Kolo</h3>
+        <p>Celá trasa kola (až na pár startovních metrů) dobrý asfalt a nebo jemný kompaktní štěrk. Silnička to hravě
+          zvládne, gravel si bude pískat. Jede se po málo frekventovaných silnicích a cyklostezce, ale <b>za plného
+            provozu</b>! Dávej bacha a do křižovatek si přibrzdi.</p>
+
+        <h3>Běh</h3>
+        <p>První část běhu je na cyklostezce a polní cestě, druhá po silnici městem. Zase bacha na ostatní účastníky
+          provozu. Končit budeš na Dobrovickém koupališti.</p>
+
+        <h3>Depo</h3>
+        <p>Tohle je speciální. Depo není. Každá část začíná a končí jinde, i z vody polezeš jinde než kdes začal. Jestli
+          se hodláš převlékat, připrav si to do tašky, rozvezem to po úsecích. Kolo si přiveď na start, do cíle ti ho
+          doveze Karel.</p>
+
+        <h3>Cíl</h3>
+        <p>Cíl je na dobrovickém koupališti. Takže můžeš dát sprchu, vyplavat unavené nohy a v kiosku doplnit vitamín D.
+          Nikam nepospíchej. Posedíme, popijeme, zhodnotíme. Čas si měř, jestli chceš. Nás zajímá jen pořadí, protože
+          zatím nemáme medaili pro všechny.</p>
+
+        <h3>Pravidla</h3>
+        <ul style="margin-left:1.2em;">
+          <li>Hlavně bezpečnost. <b>Bez helmy nechoď.</b></li>
+          <li><b>Vezmi si s sebou na kolo mobil.</b> Jak nedojedeš do hodiny, začneme se strachovat a to bys nám nepřál.
+          </li>
+        </ul>
+
+        <h3 style="margin-top:1.5em;">Dobrovolníci</h3>
+        <p>Jestli s sebou přivezeš někoho, kdo nestartuje, může nám pomoct – fandit u křižovatky a u toho jí pohlídat,
+          vzít do auta kolo navíc a tak. Hrozně to pomůže. Díky!</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- PAGE 4 -->
+  <section class="page normal">
+    <div class="container">
+      <h1>Kontakt</h1>
+      <p>Zaregistruj se, my se ti ozveme.</p>
+    </div>
+  </section>
 
   <script>
-    const targetDate = new Date("2026-08-22T00:00:00").getTime();
+    /* countdown */
+    const targetDate = new Date("2026-08-22T14:00:00").getTime();
 
     function updateCountdown() {
       const now = new Date().getTime();
@@ -189,6 +355,46 @@
 
     updateCountdown();
     setInterval(updateCountdown, 1000);
+
+    /* scroll arrow */
+    function scrollNext() {
+      const next = document.querySelector("#page1").nextElementSibling;
+      if (next) { next.scrollIntoView({ behavior: "smooth" }); }
+    }
+
+    /* Leaflet map */
+    const map = L.map('map').setView([50.34, 15.04], 13);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap'
+    }).addTo(map);
+
+    const group = L.featureGroup().addTo(map);
+
+    function loadRoute(file, color) {
+      fetch(file)
+        .then(response => response.json())
+        .then(data => {
+          const layer = L.geoJSON(data, { style: { color: color, weight: 5 } });
+          layer.addTo(group);
+          map.fitBounds(group.getBounds());
+        });
+    }
+
+    // Load your GeoJSON routes
+    loadRoute("data/geojson/run.geojson", "red");
+    loadRoute("data/geojson/bike.geojson", "blue");
+
+    // Markers
+    L.marker([50.364822, 15.00474]).bindPopup("<b>Cíl kolo</b><br>Start běh").addTo(group);
+    L.marker([50.3023525, 15.0039225]).bindPopup("<b>Start plavání</b>").addTo(group);
+    L.marker([50.300547, 15.006105]).bindPopup("<b>Cíl plavání</b><br>Start kolo").addTo(group);
+    L.marker([50.367326, 14.958495]).bindPopup("<b>Cíl běh</b>").addTo(group);
+
+    // Fix map rendering after scroll
+    setTimeout(() => { map.invalidateSize(); }, 400);
   </script>
+
 </body>
+
 </html>
